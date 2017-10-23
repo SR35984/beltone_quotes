@@ -1,0 +1,31 @@
+<html>
+    
+    <head>
+        <title></title>
+        {% load staticfiles %}
+    </head>
+    
+    <body>
+        <div class="wrapper">
+            <p class="nav">
+                <a href="{% url 'logout' %}">Log out</a>
+            </p>
+            <h2>Welcome, {{ user.name }}!</h2>
+            <div class="container">
+                <p>Quotable Quotes<textarea name="content"></textarea></p>
+                <button type="submit">Add to My List</button>
+    
+                <p>Your Favorites <textarea name="content"></textarea></p>
+                <button type="submit">Remove from My List</button>
+            </div>
+    
+            <h3>Contribute a Quote:</h3>
+            <form action="{% url 'create_quote' %}" class="myform" method="post">
+                {% csrf_token %} Quoted By: <input type="text" name="title" />
+                <p>Message: <textarea name="content"></textarea></p>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </body>
+    
+    </html>
