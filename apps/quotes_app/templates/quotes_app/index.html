@@ -1,31 +1,53 @@
 <html>
-    
-    <head>
-        <title></title>
-        {% load staticfiles %}
-    </head>
-    
-    <body>
-        <div class="wrapper">
-            <p class="nav">
-                <a href="{% url 'logout' %}">Log out</a>
-            </p>
-            <h2>Welcome, {{ user.name }}!</h2>
-            <div class="container">
-                <p>Quotable Quotes<textarea name="content"></textarea></p>
-                <button type="submit">Add to My List</button>
-    
-                <p>Your Favorites <textarea name="content"></textarea></p>
-                <button type="submit">Remove from My List</button>
-            </div>
-    
-            <h3>Contribute a Quote:</h3>
-            <form action="{% url 'create_quote' %}" class="myform" method="post">
-                {% csrf_token %} Quoted By: <input type="text" name="title" />
-                <p>Message: <textarea name="content"></textarea></p>
-                <button type="submit">Submit</button>
+
+<head>
+    <title>Quotes Page</title>
+</head>
+
+<body>
+    <div class="wrapper">
+        <p class="nav">
+            <a href="{% url 'logout' %}">Log out</a>
+        </p>
+        <h2>Welcome, {{ user.name }}!</h2>
+        <div class="container">
+
+            <h3>Quotable Quotes</h3>
+            {% for quote in quotes %} 
+                <hr>
+                <h4>{{quote.quoted_by}}: {{quote.message}}</h4>
+                <p>Posted by: <a href='/quotes/showuser/{{quote.posted_by.id}}'>{{quote.posted_by.alias}}</a></p>
+                <form action="/quotes/addfave/{{quote.id}}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="quote_id" value="{{quote.id}}">
+                    <button type="submit">Favorite</button>
+                </form>
+            {% endfor %}
+
+            <h3>Your Favorites</h3>
+            {% for quote in favorites %} 
+            <hr>
+            <h4>{{quote.quoted_by}}: {{quote.message}}</h4>
+            <p>Posted by: <a href='/quotes/showuser/{{quote.posted_by.id}}'>{{quote.posted_by.alias}}</a></p>
+            <form action="/quotes/remfave/{{quote.id}}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="quote_id" value="{{quote.id}}">
+                <button type="submit">Remove from Favorites</button>
             </form>
+        {% endfor %}
         </div>
-    </body>
-    
-    </html>
+
+        {% if messages %}
+        {% for message in messages %}
+                <p>{{message}}</p>
+        {% endfor %}{% endif %}
+        <h3>Contribute a Quote:</h3>
+        <form action="{% url 'create_quote' %}" class="myform" method="post">
+            {% csrf_token %} Quoted By: <input type="text" name="quoted_by" />
+            <p>Message: <textarea name="message"></textarea></p>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+
+</html>

@@ -3,31 +3,70 @@ from django.contrib import messages
 from ..login_reg_app.models import User
 from .models import Quote
 
+
+# =================================================
+# 						HELPERS
+# =================================================
 def current_user(request):
-	return User.objects.get(id=request.session['user_id'])
+    return User.objects.get(id=request.session['user_id'])
+
 
 def flash_errors(request, errors):
-	for error in errors:
-		messages.error(request, error)
+    for error in errors:
+        messages.error(request, error)
 
+
+# =================================================
+# 						RENDER
+# =================================================
 def index(request):
-	user = current_user(request)
-	context= {
-		'user' : user
-	}
-	return render(request, 'quotes_app/index.html', context)
+    if 'user_id' not in request.session:
+        return redirect('/')
 
+    user = current_user(request)
+    context = {
+        'user': user, 
+        'quotes': Quote.objects.all().exclude(favorited_by = user),
+        'favorites': user.favorites.all()
+    }
+    return render(request, 'quotes_app/index.html', context)
+
+
+def show_user(request, userid):
+    user = User.objects.get(id = userid)
+    context = {
+        'user': user,
+        'quotes': Quote.objects.filter(posted_by = user),
+        'count': Quote.objects.filter(posted_by = user).count()
+        }
+    return render(request, 'quotes_app/user.html', context)
+
+
+# =================================================
+# 						PROCESS
+# =================================================
 def create(request):
-	if request.method == "POST":
-		errors = Quote.objects.validate(request.POST) 
+    if request.method == "POST":
+        errors = Quote.objects.validate(request.POST)
 
-		if not errors:
-			user = current_user(request)
-			quote = Quote.objects.create_quote(request.POST)
-	
-		flash_errors(request, errors)
-	return redirect(reverse('add_book')) 
-	
-def logout(request):
-    print "********** logout *************** "
-    return redirect(reverse('landing'))
+        if not errors:
+            user = current_user(request)
+            Quote.objects.create_quote(request.POST, request.session["user_id"])
+
+        flash_errors(request, errors)
+    return redirect('/quotes')
+
+
+def add_favorite(request,quote_id):
+    user = User.objects.get(id=request.session["user_id"])
+    favorite = Quote.objects.get(id=quote_id)
+    user.favorites.add(favorite)
+    return redirect('/quotes')
+
+
+def delete_favorite(request,quote_id):
+    user = User.objects.get(id=request.session["user_id"])
+    favorite = Quote.objects.get(id=quote_id)
+    user.favorites.remove(favorite)
+    return redirect('/quotes')
+

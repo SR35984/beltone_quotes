@@ -42,7 +42,7 @@ def login(request):
         if 'user' in check:
             request.session['user_id'] = check['user'].id
 
-            return redirect(reverse('quotes_app_index'))
+            return redirect(reverse('dashboard'))
 
         flash_errors(check['errors'], request)
     return redirect(reverse('landing'))
